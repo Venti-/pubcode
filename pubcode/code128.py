@@ -150,9 +150,18 @@ class Code128(object):
             charset = charsets[symbol_num]
 
             if charset is not prev_charset:
-                charset_symbol = cls._char_codes[charset]
-                result.append(cls._sym2val[prev_charset][charset_symbol])
-                prev_charset = charset
+                # Handle a special case of there being a single A in middle of two B's or the other way around, where
+                # using a single shift character is more efficient than using two character set switches.
+                next_charset = charsets[symbol_num + 1] if symbol_num + 1 < len(charsets) else None
+                if charset == 'A' and prev_charset == next_charset == 'B':
+                    result.append(cls._sym2val[prev_charset][cls.Special.SHIFT_A])
+                elif charset == 'B' and prev_charset == next_charset == 'A':
+                    result.append(cls._sym2val[prev_charset][cls.Special.SHIFT_B])
+                else:
+                    # This is the normal case.
+                    charset_symbol = cls._char_codes[charset]
+                    result.append(cls._sym2val[prev_charset][charset_symbol])
+                    prev_charset = charset
 
             nxt = cur + (2 if charset is 'C' else 1)
             symbol = data[cur:nxt]
@@ -171,8 +180,13 @@ class Code128(object):
             # The initial charset doesn't matter, as the start codes have the same symbol values in all charsets.
             charset = 'A'
 
+            shift_charset = None
             for symbol_value in symbol_values:
-                symbol = self._val2sym[charset][symbol_value]
+                if shift_charset:
+                    symbol = self._val2sym[shift_charset][symbol_value]
+                    shift_charset = None
+                else:
+                    symbol = self._val2sym[charset][symbol_value]
 
                 if symbol in (self.Special.START_A, self.Special.CODE_A):
                     charset = 'A'
@@ -180,6 +194,10 @@ class Code128(object):
                     charset = 'B'
                 elif symbol in (self.Special.START_C, self.Special.CODE_C):
                     charset = 'C'
+                elif symbol in (self.Special.SHIFT_A,):
+                    shift_charset = 'A'
+                elif symbol in (self.Special.SHIFT_B,):
+                    shift_charset = 'B'
 
                 yield symbol
 

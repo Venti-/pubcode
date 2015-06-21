@@ -66,3 +66,27 @@ class TestCode128(TestCase):
         ]
 
         self.assertSequenceEqual(code.symbols, correct_symbols)
+
+    def test_shift_a(self):
+        data = 'a\x00a\x00a'
+        code = Code128(data, charset='BABAB')
+
+        correct_symbols = [
+            Code128.Special.START_B,
+           'a', Code128.Special.SHIFT_A, '\x00', 'a', Code128.Special.SHIFT_A, '\x00', 'a',
+           'v', Code128.Special.STOP
+        ]
+
+        self.assertSequenceEqual(code.symbols, correct_symbols)
+
+    def test_shift_b(self):
+        data = '\x00b\x00b\x00'
+        code = Code128(data, charset='ABABA')
+
+        correct_symbols = [
+            Code128.Special.START_A,
+           '\x00', Code128.Special.SHIFT_B, 'b', '\x00', Code128.Special.SHIFT_B, 'b', '\x00',
+           '\x1b', Code128.Special.STOP
+        ]
+
+        self.assertSequenceEqual(code.symbols, correct_symbols)
