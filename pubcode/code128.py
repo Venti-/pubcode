@@ -1,4 +1,9 @@
 # -*- coding: utf-8 -*-
+try:
+    from PIL import Image
+except ImportError:
+    # PIL is needed only for creating images of the barcode. Set Image to None to signify that PIL is missing.
+    Image = None
 
 
 class Code128(object):
@@ -12,6 +17,9 @@ class Code128(object):
         pass
 
     class IncompatibleCharsetError(Error):
+        pass
+
+    class MissingDependencyError(Error):
         pass
 
     # List of bar and space weights, indexed by symbol character values (0-105), and the STOP character (106).
@@ -203,6 +211,38 @@ class Code128(object):
 
         return list(_iter_symbols(self.symbol_values))
 
+    @property
+    def bars(self):
+        """A string of the bar and space weights of the barcode. Starting with a bar and alternating.
+
+        >> barcode = Code128("Hello!", charset='B')
+        >> barcode.bars
+        '2112142311131122142211142211141341112221221212412331112'
+
+        :rtype: string
+        """
+        return ''.join(map((lambda val: self._val2bars[val]), self.symbol_values))
+
+    @property
+    def modules(self):
+        """A list of the modules, with 0 representing a bar and 1 representing a space.
+
+        >> barcode = Code128("Hello!", charset='B')
+        >> barcode.modules  # doctest: +ELLIPSIS
+        [0, 0, 1, 0, 1, 1, 0, 1, ..., 0, 0, 0, 1, 0, 1, 0, 0]
+
+        :rtype: list[int]
+        """
+        def _iterate_modules(bars):
+            is_bar = True
+            for char in map(int, bars):
+                while char > 0:
+                    char -= 1
+                    yield 0 if is_bar else 1
+                is_bar = not is_bar
+
+        return list(_iterate_modules(self.bars))
+
     @staticmethod
     def _calc_checksum(values):
         """Calculate the symbol check character."""
@@ -210,3 +250,35 @@ class Code128(object):
         for index, value in enumerate(values):
             checksum += index * value
         return checksum % 103
+
+    def image(self, height=1, module_width=1, add_quiet_zone=True):
+        """Get the barcode as PIL.Image.
+
+        By default the image is one pixel high and the number of modules pixels wide, with 10 empty modules added to
+        each side to act as the quiet zone. The size can be modified by setting height and module_width, but if used in
+        a web page it might be a good idea to do the scaling on client side.
+
+        :param height: Height of the image in number of pixels.
+        :param module_width: A multiplier for the width.
+        :param add_quiet_zone: Whether to add 10 empty modules to each side of the barcode.
+
+        :rtype: PIL.Image
+        :return: A monochromatic image containing the barcode as black bars on white background.
+        """
+        if Image is None:
+            raise Code128.MissingDependencyError("PIL module is required to use image method.")
+
+        modules = list(self.modules)
+        if add_quiet_zone:
+            # Add ten space modules to each side of the barcode.
+            modules = [1] * 10 + modules + [1] * 10
+        width = len(modules)
+
+        img = Image.new(mode='1', size=(width, 1))
+        img.putdata(modules)
+
+        if height == 1 and module_width == 1:
+            return img
+        else:
+            new_size = (width * module_width, height)
+            return img.resize(new_size, resample=Image.NEAREST)

@@ -90,3 +90,31 @@ class TestCode128(TestCase):
         ]
 
         self.assertSequenceEqual(code.symbols, correct_symbols)
+
+    def test_image(self):
+        """Test that the generated image is of the correct format and contains the correct data."""
+        data = "Hello!"
+        code = Code128(data, charset='B')
+        image = code.image(add_quiet_zone=False)
+
+        hello_b_modules = [
+            0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1,  # Start B
+            0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1,  # H
+            0, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1,  # e
+            0, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1,  # l
+            0, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1,  # l
+            0, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1,  # o
+            0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 1,  # !
+            0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1,  # check symbol (r)
+            0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 1, 0, 0  # Stop
+        ]
+
+        # Check that the image is monochrome.
+        self.assertEqual(image.mode, '1')
+
+        # Check that the image is exactly one pixel in height.
+        self.assertEqual(image.size[1], 1)
+
+        # Check that the image is of the correct width and has the correct pixels in it.
+        pixels = [image.getpixel((x,0)) for x in range(image.size[0])]
+        self.assertListEqual(pixels, hello_b_modules)
