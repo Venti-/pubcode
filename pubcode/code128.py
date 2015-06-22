@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import base64
+from cStringIO import StringIO
 try:
     from PIL import Image
 except ImportError:
@@ -20,6 +22,9 @@ class Code128(object):
         pass
 
     class MissingDependencyError(Error):
+        pass
+
+    class UnknownFormatError(Error):
         pass
 
     # List of bar and space weights, indexed by symbol character values (0-105), and the STOP character (106).
@@ -282,3 +287,45 @@ class Code128(object):
         else:
             new_size = (width * module_width, height)
             return img.resize(new_size, resample=Image.NEAREST)
+
+    def data_url(self, image_format='png'):
+        """Get a data URL representing the barcode.
+
+        >> barcode = Code128('Hello!', charset='B')
+        >> barcode.data_url()  # doctest: +ELLIPSIS
+        'data:image/png;base64,...'
+
+        :param image_format: Either 'png' or 'bmp'.
+
+        :raises: Code128.UnknownFormatError
+
+        :returns: A data URL with the barcode as an image.
+        """
+        memory_file = StringIO()
+        pil_image = self.image(add_quiet_zone=False)
+
+        # Using BMP can often result in smaller data URLs than PNG, but it isn't as widely supported by browsers as PNG.
+        # GIFs result in data URLs 10 times bigger than PNG or BMP, possibly due to lack of support for monochrome GIFs
+        # in Pillow, so they shouldn't be used.
+        if image_format == 'png':
+            # Unfortunately there is no way to avoid adding the zlib headers.
+            # Using compress_level=0 sometimes results in a slightly bigger data size (by a few bytes), but there
+            # doesn't appear to be a difference between levels 9 and 1, so let's just use 1.
+            pil_image.save(memory_file, format='png', compress_level=1)
+        elif image_format == 'bmp':
+            pil_image.save(memory_file, format='bmp')
+        else:
+            raise Code128.UnknownFormatError('Only png and bmp are supported.')
+
+        base64_image = base64.b64encode(memory_file.getvalue())
+
+        # The padding should not be necessary as the length is known for a data URL, but at least some old versions
+        # of Chrome require it.
+        #base64_image = base64_image.strip("=")
+
+        data_url = 'data:image/{format};base64,{base64_data}'.format(
+            format=image_format,
+            base64_data=base64_image
+        )
+
+        return data_url

@@ -1,9 +1,25 @@
 # -*- coding: utf-8 -*-
 from unittest import TestCase
 from pubcode import Code128
+import base64
+from PIL import Image
+from cStringIO import StringIO
 
 
 class TestCode128(TestCase):
+    # Test data used by multiple tests.
+    _hello_b_modules = [
+        0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1,  # Start B
+        0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1,  # H
+        0, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1,  # e
+        0, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1,  # l
+        0, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1,  # l
+        0, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1,  # o
+        0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 1,  # !
+        0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1,  # check symbol (r)
+        0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 1, 0, 0  # Stop
+    ]
+
     def test__init__wrong_charset(self):
         with self.assertRaises(Code128.CharsetError):
             Code128('Hello!', 'D')
@@ -97,18 +113,6 @@ class TestCode128(TestCase):
         code = Code128(data, charset='B')
         image = code.image(add_quiet_zone=False)
 
-        hello_b_modules = [
-            0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1,  # Start B
-            0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1,  # H
-            0, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1,  # e
-            0, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1,  # l
-            0, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1,  # l
-            0, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1,  # o
-            0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 1,  # !
-            0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1,  # check symbol (r)
-            0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 1, 0, 0  # Stop
-        ]
-
         # Check that the image is monochrome.
         self.assertEqual(image.mode, '1')
 
@@ -117,4 +121,24 @@ class TestCode128(TestCase):
 
         # Check that the image is of the correct width and has the correct pixels in it.
         pixels = [image.getpixel((x,0)) for x in range(image.size[0])]
-        self.assertListEqual(pixels, hello_b_modules)
+        self.assertListEqual(pixels, self._hello_b_modules)
+
+    def test_data_url(self):
+        code = Code128("Hello!", charset='B')
+
+        data_url = code.data_url()
+        base64_image = data_url.split(',')[1]
+        image_data = base64.b64decode(base64_image)
+
+        memory_file = StringIO(image_data)
+        image = Image.open(memory_file)
+
+        # Check that the image is monochrome.
+        self.assertEqual(image.mode, '1')
+
+        # Check that the image is exactly one pixel in height.
+        self.assertEqual(image.size[1], 1)
+
+        # Check that the image is of the correct width and has the correct pixels in it.
+        pixels = [1 if image.getpixel((x, 0)) else 0 for x in range(image.size[0])]
+        self.assertListEqual(pixels, self._hello_b_modules)
