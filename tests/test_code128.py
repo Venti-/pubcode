@@ -32,12 +32,12 @@ class TestCode128(TestCase):
 
     def test_codeset_a(self):
         """Test every character in code set A."""
-        data = ''.join(map(chr, range(0, 95+1)))
+        data = ''.join(map(chr, range(0, 95 + 1)))
         code = Code128(data, charset='A')
 
         correct_symbols = (
             [Code128.Special.START_A] +
-            map(chr, range(0, 95+1)) +
+            map(chr, range(0, 95 + 1)) +
             ['T', Code128.Special.STOP]
         )
 
@@ -45,13 +45,13 @@ class TestCode128(TestCase):
 
     def test_codeset_b(self):
         """Test code set B."""
-        data = ''.join(map(chr, range(32, 127+1)))
+        data = ''.join(map(chr, range(32, 127 + 1)))
         code = Code128(data, charset='B')
 
         # The characters that can be encoded are ordinals 32 through 127.
         correct_symbols = (
             [Code128.Special.START_B] +
-            map(chr, range(32, 127+1)) +
+            map(chr, range(32, 127 + 1)) +
             ['\x7f', Code128.Special.STOP]
         )
 
@@ -64,7 +64,7 @@ class TestCode128(TestCase):
 
         correct_symbols = (
             [Code128.Special.START_C] +
-            map(lambda x: '%02d' % (x), range(100)) +
+            map(lambda x: '%02d' % (x,), range(100)) +
             ['97', Code128.Special.STOP]
         )
 
@@ -89,8 +89,8 @@ class TestCode128(TestCase):
 
         correct_symbols = [
             Code128.Special.START_B,
-           'a', Code128.Special.SHIFT_A, '\x00', 'a', Code128.Special.SHIFT_A, '\x00', 'a',
-           'v', Code128.Special.STOP
+            'a', Code128.Special.SHIFT_A, '\x00', 'a', Code128.Special.SHIFT_A, '\x00', 'a',
+            'v', Code128.Special.STOP
         ]
 
         self.assertSequenceEqual(code.symbols, correct_symbols)
@@ -101,8 +101,8 @@ class TestCode128(TestCase):
 
         correct_symbols = [
             Code128.Special.START_A,
-           '\x00', Code128.Special.SHIFT_B, 'b', '\x00', Code128.Special.SHIFT_B, 'b', '\x00',
-           '\x1b', Code128.Special.STOP
+            '\x00', Code128.Special.SHIFT_B, 'b', '\x00', Code128.Special.SHIFT_B, 'b', '\x00',
+            '\x1b', Code128.Special.STOP
         ]
 
         self.assertSequenceEqual(code.symbols, correct_symbols)
@@ -120,7 +120,7 @@ class TestCode128(TestCase):
         self.assertEqual(image.size[1], 1)
 
         # Check that the image is of the correct width and has the correct pixels in it.
-        pixels = [image.getpixel((x,0)) for x in range(image.size[0])]
+        pixels = [image.getpixel((x, 0)) for x in range(image.size[0])]
         self.assertListEqual(pixels, self._hello_b_modules)
 
     def test_data_url(self):
