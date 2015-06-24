@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
+from builtins import *  # Use Python3-like builtins for Python2.
 import base64
-from cStringIO import StringIO
+import io
 try:
     from PIL import Image
 except ImportError:
@@ -68,8 +69,8 @@ class Code128(object):
         # Code Set A includes ordinals 0 through 95 and 7 special characters. The ordinals include digits,
         # upper case characters, punctuation and control characters.
         'A':
-            list(map(chr, range(32, 95 + 1))) +
-            list(map(chr, range(0, 31 + 1))) +
+            [chr(x) for x in range(32, 95 + 1)] +
+            [chr(x) for x in range(0, 31 + 1)] +
             [
                 Special.FNC_3, Special.FNC_2, Special.SHIFT_B, Special.CODE_C,
                 Special.CODE_B, Special.FNC_4, Special.FNC_1,
@@ -78,7 +79,7 @@ class Code128(object):
         # Code Set B includes ordinals 32 through 127 and 7 special characters. The ordinals include digits,
         # upper and lover case characters and punctuation.
         'B':
-            list(map(chr, range(32, 127 + 1))) +
+            [chr(x) for x in range(32, 127 + 1)] +
             [
                 Special.FNC_3, Special.FNC_2, Special.SHIFT_A, Special.CODE_C,
                 Special.FNC_4, Special.CODE_A, Special.FNC_1,
@@ -86,7 +87,7 @@ class Code128(object):
             ],
         # Code Set C includes all pairs of 2 digits and 3 special characters.
         'C':
-            list(map(lambda x: '%02d' % (x,), range(0, 99 + 1))) +
+            ['%02d' % (x,) for x in range(0, 99 + 1)] +
             [
                 Special.CODE_B, Special.CODE_A, Special.FNC_1,
                 Special.START_A, Special.START_B, Special.START_C, Special.STOP
@@ -117,7 +118,7 @@ class Code128(object):
         if charset in ('A', 'B'):
             charset *= len(data)
         elif charset in ('C',):
-            charset *= (len(data) / 2)
+            charset *= (len(data) // 2)
             if len(data) % 2 == 1:
                 # If there are an odd number of characters for charset C, encode the last character with charset B.
                 charset += 'B'
@@ -301,7 +302,7 @@ class Code128(object):
 
         :returns: A data URL with the barcode as an image.
         """
-        memory_file = StringIO()
+        memory_file = io.BytesIO()
         pil_image = self.image(add_quiet_zone=False)
 
         # Using BMP can often result in smaller data URLs than PNG, but it isn't as widely supported by browsers as PNG.
@@ -317,11 +318,11 @@ class Code128(object):
         else:
             raise Code128.UnknownFormatError('Only png and bmp are supported.')
 
-        base64_image = base64.b64encode(memory_file.getvalue())
+        base64_image = base64.b64encode(memory_file.getvalue()).decode()
 
         # The padding should not be necessary as the length is known for a data URL, but at least some old versions
         # of Chrome require it.
-        #base64_image = base64_image.strip("=")
+        #base64_image = base64_image.strip(b"=")
 
         data_url = 'data:image/{format};base64,{base64_data}'.format(
             format=image_format,

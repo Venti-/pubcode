@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
+from builtins import *  # Use Python3-like builtins for Python2.
 from unittest import TestCase
 from pubcode import Code128
 import base64
 from PIL import Image
-from cStringIO import StringIO
+import io
 
 
 class TestCode128(TestCase):
@@ -32,12 +33,12 @@ class TestCode128(TestCase):
 
     def test_codeset_a(self):
         """Test every character in code set A."""
-        data = ''.join(map(chr, range(0, 95 + 1)))
+        data = ''.join(chr(x) for x in range(0, 95 + 1))
         code = Code128(data, charset='A')
 
         correct_symbols = (
             [Code128.Special.START_A] +
-            map(chr, range(0, 95 + 1)) +
+            [chr(x) for x in range(0, 95 + 1)] +
             ['T', Code128.Special.STOP]
         )
 
@@ -45,13 +46,13 @@ class TestCode128(TestCase):
 
     def test_codeset_b(self):
         """Test code set B."""
-        data = ''.join(map(chr, range(32, 127 + 1)))
+        data = ''.join(chr(x) for x in range(32, 127 + 1))
         code = Code128(data, charset='B')
 
         # The characters that can be encoded are ordinals 32 through 127.
         correct_symbols = (
             [Code128.Special.START_B] +
-            map(chr, range(32, 127 + 1)) +
+            [chr(x) for x in range(32, 127 + 1)] +
             ['\x7f', Code128.Special.STOP]
         )
 
@@ -64,7 +65,7 @@ class TestCode128(TestCase):
 
         correct_symbols = (
             [Code128.Special.START_C] +
-            map(lambda x: '%02d' % (x,), range(100)) +
+            ['%02d' % (x,) for x in range(100)] +
             ['97', Code128.Special.STOP]
         )
 
@@ -130,7 +131,7 @@ class TestCode128(TestCase):
         base64_image = data_url.split(',')[1]
         image_data = base64.b64decode(base64_image)
 
-        memory_file = StringIO(image_data)
+        memory_file = io.BytesIO(image_data)
         image = Image.open(memory_file)
 
         # Check that the image is monochrome.

@@ -1,1 +1,1 @@
-from code128 import Code128
+from .code128 import Code128
