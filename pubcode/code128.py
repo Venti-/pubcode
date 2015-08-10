@@ -178,7 +178,7 @@ class Code128(object):
                     result.append(cls._sym2val[prev_charset][charset_symbol])
                     prev_charset = charset
 
-            nxt = cur + (2 if charset is 'C' else 1)
+            nxt = cur + (2 if charset == 'C' else 1)
             symbol = data[cur:nxt]
             cur = nxt
             result.append(cls._sym2val[charset][symbol])
