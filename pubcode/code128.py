@@ -290,7 +290,7 @@ class Code128(object):
             new_size = (width * module_width, height)
             return img.resize(new_size, resample=Image.NEAREST)
 
-    def data_url(self, image_format='png'):
+    def data_url(self, image_format='png', add_quiet_zone=False):
         """Get a data URL representing the barcode.
 
         >>> barcode = Code128('Hello!', charset='B')
@@ -304,7 +304,7 @@ class Code128(object):
         :returns: A data URL with the barcode as an image.
         """
         memory_file = io.BytesIO()
-        pil_image = self.image(add_quiet_zone=False)
+        pil_image = self.image(add_quiet_zone=add_quiet_zone)
 
         # Using BMP can often result in smaller data URLs than PNG, but it isn't as widely supported by browsers as PNG.
         # GIFs result in data URLs 10 times bigger than PNG or BMP, possibly due to lack of support for monochrome GIFs
