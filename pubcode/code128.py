@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import, division, print_function, unicode_literals
 from builtins import *  # Use Python3-like builtins for Python2.
 import base64
 import io
