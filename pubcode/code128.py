@@ -221,8 +221,8 @@ class Code128(object):
     def bars(self):
         """A string of the bar and space weights of the barcode. Starting with a bar and alternating.
 
-        >> barcode = Code128("Hello!", charset='B')
-        >> barcode.bars
+        >>> barcode = Code128("Hello!", charset='B')
+        >>> barcode.bars
         '2112142311131122142211142211141341112221221212412331112'
 
         :rtype: string
@@ -233,8 +233,8 @@ class Code128(object):
     def modules(self):
         """A list of the modules, with 0 representing a bar and 1 representing a space.
 
-        >> barcode = Code128("Hello!", charset='B')
-        >> barcode.modules  # doctest: +ELLIPSIS
+        >>> barcode = Code128("Hello!", charset='B')
+        >>> barcode.modules  # doctest: +ELLIPSIS
         [0, 0, 1, 0, 1, 1, 0, 1, ..., 0, 0, 0, 1, 0, 1, 0, 0]
 
         :rtype: list[int]
@@ -292,8 +292,8 @@ class Code128(object):
     def data_url(self, image_format='png'):
         """Get a data URL representing the barcode.
 
-        >> barcode = Code128('Hello!', charset='B')
-        >> barcode.data_url()  # doctest: +ELLIPSIS
+        >>> barcode = Code128('Hello!', charset='B')
+        >>> barcode.data_url()  # doctest: +ELLIPSIS
         'data:image/png;base64,...'
 
         :param image_format: Either 'png' or 'bmp'.
