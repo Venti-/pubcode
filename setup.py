@@ -32,5 +32,9 @@ setup(
         'Programming Language :: Python :: 3.4',
     ],
 
+    install_requires=[
+        "future",  # For Python3 like builtins in Python2.
+    ],
+
     packages=find_packages(exclude=['tests']),
 )
