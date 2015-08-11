@@ -5,6 +5,9 @@ required to render the barcode. It can optionally use PIL to render the
 barcode or to provide a data URL containing a single pixel high PNG barcode
 which can be resized by a browser to a more usefull size.
 
+.. image:: https://travis-ci.org/Venti-/pubcode.svg?branch=master
+    :target: https://travis-ci.org/Venti-/pubcode
+
 
 Supported barcodes
 ------------------
