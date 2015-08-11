@@ -1,12 +1,17 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function, unicode_literals
 from builtins import *  # Use Python3-like builtins for Python2.
+
 from unittest import TestCase
 from pubcode import Code128
 import base64
-from PIL import Image
 import io
 
+# PIL is optional.
+try:
+    import PIL
+except ImportError:
+    PIL = None
 
 class TestCode128(TestCase):
     # Test data used by multiple tests.
@@ -111,6 +116,9 @@ class TestCode128(TestCase):
 
     def test_image(self):
         """Test that the generated image is of the correct format and contains the correct data."""
+        if PIL is None:
+            return
+
         data = "Hello!"
         code = Code128(data, charset='B')
         image = code.image(add_quiet_zone=False)
@@ -126,6 +134,9 @@ class TestCode128(TestCase):
         self.assertListEqual(pixels, self._hello_b_modules)
 
     def test_data_url(self):
+        if PIL is None:
+            return
+
         code = Code128("Hello!", charset='B')
 
         # Get the second part of the data url, which contains the base64 encoded image.
@@ -134,7 +145,7 @@ class TestCode128(TestCase):
         # Remove the base64 encoding and create a PIL.Image out of it.
         image_data = base64.b64decode(base64_image)
         memory_file = io.BytesIO(image_data)
-        image = Image.open(memory_file)
+        image = PIL.Image.open(memory_file)
 
         # Check that the image is monochrome.
         self.assertEqual(image.mode, '1')

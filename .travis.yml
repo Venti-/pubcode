@@ -1,0 +1,11 @@
+language: python
+
+python:
+  - 2.7
+  - 3.3
+  - 3.4
+
+script:
+  - nosetests -v
+  # The doctests fail on Python2 due to the added u'' in strings.
+  - if [[ $TRAVIS_PYTHON_VERSION == 3* ]]; then nosetests --with-doctest; fi
