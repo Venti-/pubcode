@@ -298,9 +298,12 @@ class Code128(object):
         'data:image/png;base64,...'
 
         :param image_format: Either 'png' or 'bmp'.
+        :param add_quiet_zone: Add a 10 white pixels on either side of the barcode.
 
         :raises: Code128.UnknownFormatError
+        :raises: Code128.MissingDependencyError
 
+        :rtype: str
         :returns: A data URL with the barcode as an image.
         """
         memory_file = io.BytesIO()
@@ -319,11 +322,8 @@ class Code128(object):
         else:
             raise Code128.UnknownFormatError('Only png and bmp are supported.')
 
-        base64_image = base64.b64encode(memory_file.getvalue()).decode()
-
-        # The padding should not be necessary as the length is known for a data URL, but at least some old versions
-        # of Chrome require it.
-        #base64_image = base64_image.strip(b"=")
+        # Encode the data in the BytesIO object and convert the result into unicode.
+        base64_image = base64.b64encode(memory_file.getvalue()).decode('ascii')
 
         data_url = 'data:image/{format};base64,{base64_data}'.format(
             format=image_format,

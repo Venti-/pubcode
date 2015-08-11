@@ -128,10 +128,11 @@ class TestCode128(TestCase):
     def test_data_url(self):
         code = Code128("Hello!", charset='B')
 
-        data_url = code.data_url()
-        base64_image = data_url.split(',')[1]
-        image_data = base64.b64decode(base64_image)
+        # Get the second part of the data url, which contains the base64 encoded image.
+        base64_image = code.data_url().split(',')[1]
 
+        # Remove the base64 encoding and create a PIL.Image out of it.
+        image_data = base64.b64decode(base64_image)
         memory_file = io.BytesIO(image_data)
         image = Image.open(memory_file)
 
