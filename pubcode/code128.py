@@ -102,6 +102,9 @@ class Code128(object):
         'C': {char: val for val, char in enumerate(_val2sym['C'])},
     }
 
+    # How large the quiet zone is on either side of the barcode, when quiet zone is used.
+    quiet_zone = 10
+
     def __init__(self, data, charset=None):
         """Initialize a barcode with data as described by the character sets in charset.
 
@@ -126,6 +129,16 @@ class Code128(object):
 
         self.data = data
         self.symbol_values = self._encode(data, charset)
+
+    def width(self, add_quiet_zone=False):
+        """Return the barcodes width in modules for a given data and character set combination.
+
+        :param add_quiet_zone: Whether quiet zone should be included in the width.
+
+        :return: Width of barcode in modules, which for images translates to pixels.
+        """
+        quiet_zone = self.quiet_zone if add_quiet_zone else 0
+        return len(self.modules) + 2 * quiet_zone
 
     @staticmethod
     def _validate_charset(data, charset):
@@ -278,7 +291,7 @@ class Code128(object):
         modules = list(self.modules)
         if add_quiet_zone:
             # Add ten space modules to each side of the barcode.
-            modules = [1] * 10 + modules + [1] * 10
+            modules = [1] * self.quiet_zone + modules + [1] * self.quiet_zone
         width = len(modules)
 
         img = Image.new(mode='1', size=(width, 1))

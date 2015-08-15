@@ -129,9 +129,35 @@ class TestCode128(TestCase):
         # Check that the image is exactly one pixel in height.
         self.assertEqual(image.size[1], 1)
 
-        # Check that the image is of the correct width and has the correct pixels in it.
+        # Check that the image is correct width.
+        self.assertEqual(image.size[0], code.width())
+
+        # Check that the image has the correct pixels in it.
         pixels = [image.getpixel((x, 0)) for x in range(image.size[0])]
         self.assertListEqual(pixels, self._hello_b_modules)
+
+    def test_image_with_quiet(self):
+        """Test that the generated image is of the correct format and contains the correct data."""
+        if PIL is None:
+            return
+
+        data = "Hello!"
+        code = Code128(data, charset='B')
+        image = code.image(add_quiet_zone=True)
+
+        # Check that the image is monochrome.
+        self.assertEqual(image.mode, '1')
+
+        # Check that the image is exactly one pixel in height.
+        self.assertEqual(image.size[1], 1)
+
+        # Check that the image is correct width.
+        self.assertEqual(image.size[0], code.width(add_quiet_zone=True))
+
+        # Check that the image has the correct pixels in it.
+        quiet_zone = [1] * code.quiet_zone
+        pixels = [image.getpixel((x, 0)) for x in range(image.size[0])]
+        self.assertListEqual(pixels, quiet_zone + self._hello_b_modules + quiet_zone)
 
     def test_data_url(self):
         if PIL is None:
