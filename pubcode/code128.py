@@ -303,7 +303,7 @@ class Code128(object):
             new_size = (width * module_width, height)
             return img.resize(new_size, resample=Image.NEAREST)
 
-    def data_url(self, image_format='png', add_quiet_zone=False):
+    def data_url(self, image_format='png', add_quiet_zone=True):
         """Get a data URL representing the barcode.
 
         >>> barcode = Code128('Hello!', charset='B')

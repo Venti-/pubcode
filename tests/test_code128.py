@@ -143,7 +143,7 @@ class TestCode128(TestCase):
 
         data = "Hello!"
         code = Code128(data, charset='B')
-        image = code.image(add_quiet_zone=True)
+        image = code.image()
 
         # Check that the image is monochrome.
         self.assertEqual(image.mode, '1')
@@ -166,7 +166,7 @@ class TestCode128(TestCase):
         code = Code128("Hello!", charset='B')
 
         # Get the second part of the data url, which contains the base64 encoded image.
-        base64_image = code.data_url().split(',')[1]
+        base64_image = code.data_url(add_quiet_zone=False).split(',')[1]
 
         # Remove the base64 encoding and create a PIL.Image out of it.
         image_data = base64.b64decode(base64_image)
